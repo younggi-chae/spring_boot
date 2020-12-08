@@ -20,7 +20,7 @@
 	</select>
 	
 	
-	<insert id="insertBoard" parameterType="board.dto.BoardDto">
+	<!--<insert id="insertBoard" parameterType="board.dto.BoardDto">
 		<![CDATA[
 			INSERT INTO t_board
 			(
@@ -34,7 +34,37 @@
 			) 
 			VALUES 
 			(
-				t_board_idx_seq.nextval,
+				board_idx_seq.nextval,
+				#{title}, 
+				#{contents},
+				0, 
+				sysdate, 
+				'admin',
+				'N'			
+			)
+		]]>
+	</insert>-->
+	
+	<insert id="insertBoard" parameterType="board.dto.BoardDto">
+		<selectKey keyProperty="boardIdx" resultType="int" order="BEFORE">
+			select t_board_idx_seq.nextval FROM DUAL
+		</selectKey>
+	
+	
+		<![CDATA[
+			INSERT INTO t_board
+			(
+				boardIdx,
+			    title, 
+				contents,
+				hit_cnt,  
+				created_datetime, 
+				creator_id,
+				deleted_yn
+			) 
+			VALUES 
+			(
+				#{boardIdx},
 				#{title}, 
 				#{contents},
 				0, 
@@ -44,6 +74,8 @@
 			)
 		]]>
 	</insert>
+	
+	
 	
 	<select id="selectBoardDetail" parameterType="int" resultType="board.dto.BoardDto">
 		<![CDATA[
@@ -94,6 +126,96 @@
 			WHERE 
 				boardidx = #{boardIdx}
 		]]>
-	</update> 
+	</update>
+	
+	<!--  <insert id="insertBoardFileList" parameterType="board.dto.BoardFileDto">
+		<![CDATA[
+			INSERT  INTO t_file
+			(	
+				idx,
+				boardidx,
+				original_file_name,
+				stored_file_path,
+				file_size,
+				creator_id,
+				created_datetime
+			) select t_file_seq.nextval,
+				boardidx,
+				original_file_name,
+				stored_file_path,
+				file_size,
+				creator_id,
+				created_datetime from(
+		]]>
+		<foreach collection="list" item="item" separator="union all">
+			select 
+			#{item.boardIdx} as boardidx,
+			#{item.originalFileName} as original_file_name,
+			#{item.storedFilePath} as stored_file_path,
+			#{item.fileSize} as file_size,
+			'admin' as creator_id,
+			sysdate as created_datetime from dual
+		</foreach>
+		)
+	</insert>-->
+
+	<insert id="insertBoardFileList" parameterType="board.dto.BoardFileDto">
+		<![CDATA[
+			INSERT INTO t_file
+			(
+				idx,
+				boardidx,
+				original_file_name,
+				stored_file_path,
+				file_size,
+				creator_id,
+				created_datetime
+			)
+			VALUES
+		]]>
+		<foreach collection="list" item="item" separator=",">
+			(
+				t_file_seq.nextval,
+				#{item.boardIdx},
+				#{item.originalFileName},
+				#{item.storedFilePath},
+				#{item.fileSize},
+				'admin',
+				sysdate
+			)
+		</foreach>
+			
+	</insert>
+	
+	
+	<select id="selectBoardFileList" parameterType="int" resultType="board.dto.BoardFileDto">
+		<![CDATA[
+			SELECT
+				idx,
+				boardIdx,
+				original_file_name AS originalFileName,
+				ROUND(file_size / 1024) AS fileSize
+			FROM
+				t_file
+			WHERE
+				boardidx = #{boardIdx}
+				AND deleted_yn = 'N'
+		]]>
+	</select>
+	
+	<select id="selectBoardFileInformation" parameterType="map" resultType="board.dto.BoardFileDto">
+		<![CDATA[
+			SELECT
+				original_file_name as originalFileName,
+				stored_file_path as storedFilePath,
+				file_size as fileSize
+			FROM
+				t_file
+			WHERE
+				idx = #{idx}
+				AND boardidx = #{boardIdx}
+				AND deleted_yn = 'N'
+		]]>
+	</select>
 	
 </mapper>
