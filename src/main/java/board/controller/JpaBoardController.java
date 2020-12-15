@@ -31,8 +31,7 @@ public class JpaBoardController {
 	
 	@RequestMapping(value="/jpa/board", method = RequestMethod.GET)
 	public ModelAndView openBoardList() throws Exception{
-		ModelAndView mv = new ModelAndView("board/jpaBoardList");
-		
+		ModelAndView mv = new ModelAndView("board/jpaBoardList");		
 		List<BoardEntity> list = jpaBoardService.selectBoardList();		
 		mv.addObject("list", list);
 		
@@ -52,8 +51,7 @@ public class JpaBoardController {
 	
 	@RequestMapping(value="/jpa/board/{boardIdx}", method=RequestMethod.GET)
 	public ModelAndView openBoardDetail(@PathVariable("boardIdx") int boardIdx) throws Exception{
-		ModelAndView mv = new ModelAndView("/board/jpaBoardDetail");
-		
+		ModelAndView mv = new ModelAndView("/board/jpaBoardDetail");		
 		BoardEntity board = jpaBoardService.selectBoardDetail(boardIdx);
 		mv.addObject("board", board);
 		System.out.println("board: " + board);
